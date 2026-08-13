@@ -34,12 +34,15 @@ app.use(
   })
 );
 
-app.use(
-  cors({
-    origin: process.env.CLIENT_URL || 'http://localhost:5173',
-    credentials: true,
-  })
-);
+// Find the CORS config and update it:
+app.use(cors({
+  origin: [
+    'http://localhost:5173',
+    'https://hostel-complaint-portal-2kvc15sje.vercel.app/', // ← Add your Vercel URL
+    /\.vercel\.app$/  // allows all vercel preview URLs
+  ],
+  credentials: true
+}));
 
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));

@@ -34,15 +34,37 @@ app.use(
   })
 );
 
-// Find the CORS config and update it:
-app.use(cors({
-  origin: [
-    'http://localhost:5173',
-    'https://hostel-complaint-portal-2kvc15sje.vercel.app/', // ← Add your Vercel URL
-    /\.vercel\.app$/  // allows all vercel preview URLs
-  ],
-  credentials: true
-}));
+app.use(
+  cors({
+    origin: function (origin, callback) {
+      // Allow requests with no origin (Postman, mobile apps, curl)
+      if (!origin) return callback(null, true);
+
+      const allowed = [
+        'http://localhost:5173',
+        'http://localhost:3000',
+      ];
+
+      // Add CLIENT_URL from env if provided
+      if (process.env.CLIENT_URL) {
+        allowed.push(process.env.CLIENT_URL.replace(/\/$/, '')); // strip trailing slash
+      }
+
+      const cleanOrigin = origin.replace(/\/$/, ''); // strip trailing slash
+
+      if (
+        allowed.includes(cleanOrigin) ||
+        cleanOrigin.endsWith('.vercel.app') ||
+        cleanOrigin.endsWith('.onrender.com')
+      ) {
+        return callback(null, true);
+      }
+
+      return callback(new Error(`CORS not allowed for: ${origin}`));
+    },
+    credentials: true,
+  })
+);
 
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));

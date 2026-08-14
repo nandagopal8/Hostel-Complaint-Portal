@@ -5,7 +5,7 @@ import User from '../models/User.js';
  * Generates a signed JWT for a given user ID
  */
 const generateToken = (id) =>
-  jwt.sign({ id }, process.env.JWT_SECRET, { expiresIn: process.env.JWT_EXPIRE });
+  jwt.sign({ id }, process.env.JWT_SECRET, { expiresIn: process.env.JWT_EXPIRE || '7d' });
 
 /**
  * @desc    Register a new student

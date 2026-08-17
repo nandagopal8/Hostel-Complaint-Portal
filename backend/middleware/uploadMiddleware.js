@@ -1,17 +1,33 @@
 import multer from 'multer';
 import path from 'path';
+import fs from 'fs';
 import { fileURLToPath } from 'url';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
+// ── Pre-create upload directories so Render never hits ENOENT ──────────────
+const ensureDir = (folder) => {
+  const dir = path.join(__dirname, '..', 'uploads', folder);
+  if (!fs.existsSync(dir)) {
+    fs.mkdirSync(dir, { recursive: true });
+    console.log(`📁 Created upload directory: ${dir}`);
+  }
+  return dir;
+};
+
+// Create both folders at module load time (runs once on server start)
+ensureDir('complaints');
+ensureDir('profiles');
+
 /**
- * Creates a Multer disk storage engine for a given upload folder
+ * Creates a Multer disk storage engine for a given upload folder.
+ * Directory is guaranteed to exist before Multer writes to it.
  */
 const createStorage = (folder) =>
   multer.diskStorage({
     destination: (req, file, cb) => {
-      const dest = path.join(__dirname, '..', 'uploads', folder);
+      const dest = ensureDir(folder); // create if missing on every request too
       cb(null, dest);
     },
     filename: (req, file, cb) => {
